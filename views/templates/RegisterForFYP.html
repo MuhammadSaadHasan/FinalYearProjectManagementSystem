@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>FYP Registration Form</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='RegisterForFYPstyle.css') }}">
+</head>
+<body>
+  <div class="signupFrm">
+    <div class="wrapper">
+      <form action="{{ url_for('register_bp.register') }}" method="post" class="form">
+        <h1 class="title">FYP Registration</h1>
+        <div class="form-sections">
+          <!-- Member Details Section -->
+          <div class="member-details">
+            <h2>Member 1 Details:</h2>
+            <div class="inputContainer">
+              <input type="text" class="input" placeholder=" " name="username1">
+              <label for="username1" class="label">Username</label>
+            </div>
+            <div class="inputContainer">
+              <input type="email" class="input" placeholder=" " name="email1">
+              <label for="email1" class="label">Email</label>
+            </div>
+            <div class="inputContainer">
+              <input type="password" class="input" placeholder=" " name="password1">
+              <label for="password1" class="label">Password</label>
+            </div>
+
+            <h2>Member 2 Details:</h2>
+            <div class="inputContainer">
+              <input type="text" class="input" placeholder=" " name="username2">
+              <label for="username2" class="label">Username</label>
+            </div>
+            <div class="inputContainer">
+              <input type="email" class="input" placeholder=" " name="email2">
+              <label for="email2" class="label">Email</label>
+            </div>
+            <div class="inputContainer">
+              <input type="password" class="input" placeholder=" " name="password2">
+              <label for="password2" class="label">Password</label>
+            </div>
+
+            <h2>Member 3 Details:</h2>
+            <div class="inputContainer">
+              <input type="text" class="input" placeholder=" " name="username3">
+              <label for="username3" class="label">Username</label>
+            </div>
+            <div class="inputContainer">
+              <input type="email" class="input" placeholder=" " name="email3">
+              <label for="email3" class="label">Email</label>
+            </div>
+            <div class="inputContainer">
+              <input type="password" class="input" placeholder=" " name="password3">
+              <label for="password3" class="label">Password</label>
+            </div>
+          </div>
+
+          <!-- Project Information Section -->
+          <div class="project-details">
+            <h2>Project Details:</h2>
+            <div class="inputContainer">
+              <input type="text" class="input" placeholder=" " name="projectTitle">
+              <label for="projectTitle" class="label">Project Title</label>
+            </div>
+            <div class="inputContainer">
+              <textarea class="input" placeholder=" " name="projectDescription" style="height: 100px;"></textarea>
+              <label for="projectDescription" class="label">Project Description</label>
+            </div>
+          </div>
+        </div>
+        <input type="submit" class="submitBtn" value="Register">
+      </form>
+    </div>
+  </div>
+</body>
+</html>

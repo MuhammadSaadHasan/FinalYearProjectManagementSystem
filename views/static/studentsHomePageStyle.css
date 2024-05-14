@@ -1,0 +1,283 @@
+/*=============== GOOGLE FONTS ===============*/
+@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600&display=swap");
+
+/*=============== VARIABLES CSS ===============*/
+:root {
+  --header-height: 3.5rem;
+  --container-padding: 20px; /* Padding for the form container */
+
+  --first-color: #34c759; /* Fresh green for primary elements */
+  --title-color: #1b7f37; /* Deep forest green for headings */
+  --text-color: #2c3e50; /* Dark bluish-grey for text */
+  --body-color: #ecf8f3; /* Very light mint green for the background */
+  --container-color: #ffffff; /* Pure white for containers */
+  --border-color: #ade5a1; /* Soft lime green for borders */
+
+  /*========== Font and typography ==========*/
+  --body-font: "Syne", sans-serif;
+  --h2-font-size: 1.25rem;
+  --normal-font-size: .938rem;
+
+  /*========== Font weight ==========*/
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semi-bold: 600;
+
+  /*========== z index ==========*/
+  --z-fixed: 100;
+  --z-modal: 1000;
+}
+
+/*=============== BASE ===============*/
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body,
+input,
+button {
+  font-family: var(--body-font);
+  font-size: var(--normal-font-size);
+}
+
+body {
+  background-color: var(--body-color);
+  color: var(--text-color);
+}
+
+input,
+button {
+  border: none;
+  outline: none;
+}
+
+ul {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/*=============== REUSABLE CSS CLASSES ===============*/
+.container {
+  max-width: 1120px;
+  margin-inline: auto;
+  padding: 0 1rem;
+}
+
+.main {
+  overflow: hidden; /* For animation */
+}
+
+/*=============== HEADER & NAV ===============*/
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: var(--body-color);
+  box-shadow: 0 2px 16px hsla(230, 75%, 32%, .15);
+  z-index: var(--z-fixed);
+}
+
+.nav {
+  height: var(--header-height);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav__logo {
+  color: var(--title-color);
+  font-weight: var(--font-semi-bold);
+}
+
+.nav__menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Add a fixed width */
+    width: 200px;
+    /* Adjust padding to maintain spacing */
+    padding: 20px 0;
+    flex-direction: column; /* Add to make items stack vertically */
+}
+
+
+
+.nav__list {
+  padding: 1rem 0;
+}
+
+.nav__item {
+  text-align: center;
+  padding: .5rem 0;
+}
+
+.nav__link {
+  color: var(--text-color);
+  font-weight: var(--font-medium);
+}
+
+/* Close button inside the menu */
+.nav__close {
+  display: none; /* Hidden as there's no JS */
+}
+
+/* Media query for desktop */
+@media screen and (min-width: 768px) {
+  .nav__menu {
+    position: static;
+    display: block; /* Show menu in a row */
+  }
+
+  .nav__list {
+    display: flex;
+    justify-content: center;
+  }
+
+  .nav__item {
+    padding: 0;
+    margin-left: 20px;
+  }
+
+  .nav__toggle, .nav__close {
+    display: none; /* Hide toggle and close icons on desktop */
+  }
+}
+
+/*==================== SECTIONS ====================*/
+.home, .about, .services, .contact {
+  padding: 4rem 0;
+  text-align: center;
+}
+
+h1, h2 {
+  color: var(--title-color);
+}
+
+p {
+  color: var(--text-color);
+}
+
+
+
+
+body {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  background-color: #FAF5FF; /* Light purple/white for the background */
+  font-family: "Lato", sans-serif;
+}
+
+.CreateUserForm {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.form {
+  background-color: #FFFFFF; /* White for the form background */
+  width: 400px;
+  border-radius: 8px;
+  padding: 20px 40px;
+  box-shadow: 0 10px 25px rgba(120, 81, 169, 0.2); /* Soft shadow with a purple tint */
+}
+
+.title {
+  font-size: 50px;
+  margin-bottom: 50px;
+  color: #5D3B8C; /* Dark purple for text */
+}
+
+.inputContainer {
+  position: relative;
+  height: 45px;
+  width: 90%;
+  margin-bottom: 17px;
+}
+
+.input {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+  width: 100%;
+  border: 1px solid #C5B4E3; /* Light purple for input borders */
+  border-radius: 7px;
+  font-size: 16px;
+  padding: 0 20px;
+  outline: none;
+  background: none;
+  z-index: 1;
+}
+
+.label {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  padding: 0 4px;
+  background-color: white; /* Ensure label has a clean white background */
+  color: #C5B4E3; /* Light purple for label text */
+  font-size: 16px;
+  transition: 0.5s;
+  z-index: 0;
+}
+
+::placeholder {
+  color: transparent;
+}
+
+.submitBtn {
+  display: block;
+  margin-left: auto;
+  padding: 15px 30px;
+  border: none;
+  background-color: #885FFF; /* Vibrant purple for primary button */
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 30px;
+}
+
+.submitBtn:hover {
+  background-color: #7A4FCF; /* Slightly darker purple on hover */
+  transform: translateY(-2px);
+}
+
+.input:focus + .label {
+  top: -7px;
+  left: 3px;
+  z-index: 10;
+  font-size: 14px;
+  font-weight: 600;
+  color: #5D3B8C; /* Dark purple for focused label */
+}
+
+.input:not(:placeholder-shown)+ .label {
+  top: -7px;
+  left: 3px;
+  z-index: 10;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.input:focus {
+  border: 2px solid #885FFF; /* Vibrant purple for focused input border */
+}

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='fypCommitteeHomePagestyle.css') }}">
+    <title>FYP Committee Home Page</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const forms = document.querySelectorAll('.CreateUserForm, .table-container');
+
+            document.querySelectorAll('.nav__link').forEach(link => {
+                link.addEventListener('click', event => {
+                    event.preventDefault();  // Prevent default anchor click behavior
+                    const formId = link.getAttribute('data-form');  // Get the form ID
+                    forms.forEach(form => {
+                        form.style.display = 'none';  // Hide all forms
+                    });
+
+                    const formToShow = document.getElementById(formId);
+                    if (formToShow) {
+                        formToShow.style.display = 'block';  // Show the selected form
+                        if (formId === 'createGroup') {
+                            fetchStudentsNotInGroup();  // Fetch students if the form is for creating groups
+                            fetchGroups(); 
+                        }
+                        if (formId === 'chooseSupervisors') {
+                            fetchNonSupervisorFaculty();  // Fetch students if the form is for creating groups
+                            fetchSupervisors();
+                        }
+                        if(formId === 'createPanel')
+                        {
+                            fetchFacultyNotInPanel();
+                            fetchPanels();
+                        }
+                        if(formId === 'registerStudents')
+                        {
+                            fetchPendingGroups();
+                        }
+                    }
+                });
+            });
+
+            document.getElementById('registerGroupsBtnID')?.addEventListener('click', () => {
+                const selectedRows = Array.from(document.querySelectorAll('#NonRegisteredTable .selected'))
+                    .map(row => ({
+                        username1: row.cells[0].textContent,
+                        email1: row.cells[1].textContent,
+                        username2: row.cells[2].textContent,
+                        email2: row.cells[3].textContent,
+                        username3: row.cells[4].textContent,
+                        email3: row.cells[5].textContent,
+                        projectTitle: row.cells[6].textContent,
+                        projectDescription: row.cells[7].textContent,
+                        password1: row.cells[8].textContent,
+                        password2: row.cells[9].textContent,
+                        password3: row.cells[10].textContent
+                    }));
+
+                // Make the AJAX call to register the selected pending groups
+                $.ajax({
+                    url: '/fyp/approve_groups',  // Endpoint to handle group registration
+                    type: 'POST',
+                    data: JSON.stringify({ groups: selectedRows }),  // Send the group data as JSON
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: () => alert('Groups registered successfully'),
+                    error: xhr => alert('Error registering groups: ' + xhr.responseText)
+                });
+            });
+
+            document.getElementById('createGroupBtn')?.addEventListener('click', () => {
+                const selectedUsernames = Array.from(document.querySelectorAll('#NotInGroupstudentTable .selected'))
+                    .map(row => row.cells[0].textContent);  // assuming the first cell contains the username
+                $.ajax({
+                    url: '/fyp/create_group',
+                    type: 'POST',
+                    data: JSON.stringify({ usernames: selectedUsernames }),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: () => alert('Group created successfully'),
+                    error: xhr => alert('Error creating group: ' + xhr.responseText)
+                });
+            });
+
+            document.getElementById('chooseSupervisorsID')?.addEventListener('click', () => {
+                const selectedUsernames = Array.from(document.querySelectorAll('#NonSupervisorsfacultyTable .selected'))
+                    .map(row => row.cells[0].textContent);  // assuming the first cell contains the username
+                $.ajax({
+                    url: '/fyp/assign_supervisors',
+                    type: 'POST',
+                    data: JSON.stringify({ usernames: selectedUsernames }),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: () => alert('Supervisor created successfully'),
+                    error: xhr => alert('Error creating supervisor: ' + xhr.responseText)
+                });
+            });
+
+            document.getElementById('createPanelBtn')?.addEventListener('click', () => {
+                const selectedUsernames = Array.from(document.querySelectorAll('#FacultyNotInPanelTable .selected'))
+                    .map(row => row.cells[0].textContent);  // assuming the first cell contains the username
+                $.ajax({
+                    url: '/fyp/create_panel',
+                    type: 'POST',
+                    data: JSON.stringify({ usernames: selectedUsernames }),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: () => alert('Panel created successfully'),
+                    error: xhr => alert('Error creating panel: ' + xhr.responseText)
+                });
+            });
+
+        });
+
+        function fetchPendingGroups() {
+            $.ajax({
+                url: '{{ url_for("register_bp.get_pending_groups") }}', // The URL to the endpoint that returns pending group data
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    const tbody = document.querySelector('#NonRegisteredTable tbody');
+                    tbody.innerHTML = ''; // Clear existing rows
+                    data.forEach(group => {
+                        const row = `<tr onclick="toggleRowSelection(event)">
+                            <td>${group.username1}</td>
+                            <td>${group.email1}</td>
+                            <td>${group.username2 || ''}</td>
+                            <td>${group.email2 || ''}</td>
+                            <td>${group.username3 || ''}</td>
+                            <td>${group.email3 || ''}</td>
+                            <td>${group.projectTitle}</td>
+                            <td>${group.projectDescription}</td>
+                            <td style="display: none;">${group.password1}</td>
+                            <td style="display: none;">${group.password2}</td>
+                            <td style="display: none;">${group.password3}</td>
+                        </tr>`;
+                        tbody.innerHTML += row;
+                    });
+                },
+                error: function(xhr) {
+                    alert('Error fetching pending groups: ' + xhr.statusText);
+                }
+            });
+        }
+
+        function fetchSupervisors() {
+            $.ajax({
+                url: '{{ url_for("faculty_bp.get_supervisors") }}',  // Make sure the endpoint is correct
+                method: 'GET',
+                success: data => {
+                    const tbody = document.querySelector('#superviorsList tbody');  // Make sure you have this table in HTML
+                    tbody.innerHTML = data.map(supervisor => `<tr>
+                        <td>${supervisor.username}</td>
+                        <td>${supervisor.email}</td>
+                    </tr>`).join('');
+                },
+                error: () => alert('Failed to fetch supervisors.')
+            });
+        }
+
+        function fetchStudentsNotInGroup() {
+            $.ajax({
+                url: '{{ url_for("student_bp.get_studentsNotInGroup") }}',
+                method: 'GET',
+                success: data => {
+                    const tbody = document.querySelector('#NotInGroupstudentTable tbody');
+                    tbody.innerHTML = data.map(student => `<tr onclick="toggleRowSelection(event)">
+                        <td>${student.username}</td>
+                        <td>${student.email}</td>
+                    </tr>`).join('');
+                },
+                error: () => alert('Failed to fetch students.')
+            });
+        }
+
+        function fetchNonSupervisorFaculty() {
+            $.ajax({
+                url: '{{ url_for("faculty_bp.get_NonSupervisorFaculty") }}',  // Update the endpoint as necessary
+                method: 'GET',
+                success: data => {
+                    const tbody = document.querySelector('#NonSupervisorsfacultyTable tbody');  // Ensure you have a table with id="NonSupervisorsfacultyTable"
+                    tbody.innerHTML = data.map(faculty => `<tr onclick="toggleRowSelection(event)">
+                        <td>${faculty.username}</td>
+                        <td>${faculty.email}</td>
+                    </tr>`).join('');
+                },
+                error: () => alert('Failed to fetch faculty.')
+            });
+        }
+
+        function fetchGroups() {
+            $.ajax({
+                url: '{{ url_for("student_bp.get_groups") }}',
+                method: 'GET',
+                success: data => {
+                    const tbody = document.querySelector('#groupsMade tbody');
+                    tbody.innerHTML = data.map(group => {
+                        const members = group.students.map(s => `${s.username} (${s.email})`).join(', ');
+                        return `<tr><td>${group.group_id}</td><td>${members}</td></tr>`;
+                    }).join('');
+                },
+                error: () => alert('Failed to fetch groups.')
+            });
+        }
+
+        function fetchPanels() {
+            $.ajax({
+                url: '{{ url_for("faculty_bp.get_panels") }}', 
+                method: 'GET',
+                success: data => {
+                    const tbody = document.querySelector('#panelsMade tbody');
+                    tbody.innerHTML = data.map(panel => {
+                        const members = panel.members.map(member => `${member.username} (${member.email})`).join(', ');
+                        return `<tr><td>${panel.panel_id}</td><td>${members}</td></tr>`;
+                    }).join('');
+                },
+                error: () => alert('Failed to fetch panels.')
+            });
+        }
+
+        function fetchFacultyNotInPanel() {
+            $.ajax({
+                url: '{{ url_for("faculty_bp.get_FacultyNotInPanel") }}',  // Update the endpoint as necessary
+                method: 'GET',
+                success: data => {
+                    const tbody = document.querySelector('#FacultyNotInPanelTable tbody');
+                    tbody.innerHTML = data.map(faculty => `<tr onclick="toggleRowSelection(event)">
+                        <td>${faculty.username}</td>
+                        <td>${faculty.email}</td>
+                    </tr>`).join('');
+                },
+                error: () => alert('Failed to fetch faculty.')
+            });
+        }
+
+        function toggleRowSelection(event) {
+            const table = event.currentTarget.closest('table');
+            let maxSelections = 100;  // Default limit for groups
+
+            if (table.id === 'FacultyNotInPanelTable') {
+                maxSelections = 6;  // Different limit for panels
+            }
+            if (table.id === 'NotInGroupstudentTable') {
+                maxSelections = 3;
+            }
+
+            const selectedCount = table.querySelectorAll('.selected').length;
+            const row = event.currentTarget;
+
+            if (row.classList.contains('selected')) {
+                row.classList.remove('selected');
+            } else if (selectedCount < maxSelections) {
+                row.classList.add('selected');
+            } else {
+                alert(`You can select up to ${maxSelections} rows only.`);
+            }
+        }
+    </script>
+</head>
+<body>
+    <header class="header" id="header">
+        <nav class="nav container">
+            <a href="#" class="nav__logo">MyWebsite</a>
+            <div class="nav__menu" id="nav-menu">
+                <ul class="nav__list">
+                    <li class="nav__item"><a href="{{ url_for('fyp_bp.fyp_committee_home') }}" class="nav__link" data-form="">Home</a></li>
+                    <li class="nav__item"><a href="#create-users" class="nav__link" data-form="userForm">Users</a></li>
+                    <li class="nav__item"><a href="#choose-supervisors" class="nav__link" data-form="chooseSupervisors">Supervisors</a></li>
+                    <li class="nav__item"><a href="#create-groups" class="nav__link" data-form="createGroup">Groups</a></li>
+                    <li class="nav__item"><a href="#register-students" class="nav__link" data-form="registerStudents">Register</a></li>
+                    <li class="nav__item"><a href="#supervisor-panel" class="nav__link" data-form="createPanel">Panel</a></li>
+                    <li class="nav__item"><a href="#project-monitoring" class="nav__link">Projects</a></li>
+                    <li class="nav__item"><a href="#communication-deadlines" class="nav__link">Communication</a></li>
+                    <li class="nav__item"><a href="#reporting" class="nav__link">Reporting</a></li>
+                </ul>
+            </div>
+            <div class="nav__toggle" id="nav-toggle"><i class="ri-menu-line"></i></div>
+        </nav>
+    </header>
+
+    <div id="userForm" class="CreateUserForm" style="display: none; position: absolute; top: 75%; left: 50%; transform: translate(-50%, -50%);">
+        <div class="wrapper">
+            <form action="{{ url_for('signup_bp.signup') }}" method="post" class="form">
+                <h1 class="title">Create User</h1>
+                <div class="inputContainer"><input type="email" class="input" placeholder=" " name="email"><label class="label">Email</label></div>
+                <div class="inputContainer"><input type="text" class="input" placeholder=" " name="username"><label class="label">Username</label></div>
+                <div class="inputContainer"><input type="password" class="input" placeholder=" " name="password"><label class="label">Password</label></div>
+                <div class="inputContainer"><input type="password" class="input" placeholder=" " name="confirm_password"><label class="label">Confirm Password</label></div>
+                <div class="inputContainer"><select name="user_type" class="input"><option value="student">Student</option><option value="faculty">Faculty</option></select><label class="label">User Type</label></div>
+                <input type="submit" class="submitBtn" value="Create User">
+            </form>
+        </div>
+    </div>
+
+    <div id="createGroup" class="table-container" style="display: none;">
+        <table id="NotInGroupstudentTable">
+            <thead><tr><th>Username</th><th>Email</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <button class="submitBtn" id="createGroupBtn">Create Group</button>
+        
+        <h3>Groups Made</h3>
+        <table id="groupsMade">
+            <thead>
+                <tr><th>Group ID</th><th>Members</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="createPanel" class="table-container" style="display: none;">
+        <table id="FacultyNotInPanelTable">
+            <thead><tr><th>Username</th><th>Email</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <button class="submitBtn" id="createPanelBtn">Create Panel</button>
+        
+        <h3>Panels Made</h3>
+        <table id="panelsMade">
+            <thead>
+                <tr><th>Panel ID</th><th>Members</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="chooseSupervisors" class="table-container" style="display: none;">
+        <table id="NonSupervisorsfacultyTable">
+            <thead><tr><th>Username</th><th>Email</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <button class="submitBtn" id="chooseSupervisorsID">Make Supervisors</button>  
+        
+        <table id="superviorsList">
+            <thead>
+                <tr><th>Username</th><th>Email</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="registerStudents" class="table-container" style="display: none;">
+        <table id="NonRegisteredTable">
+            <thead>
+                <tr>
+                    <th>Member 1 Username</th><th>Member 1 Email</th><th>Member 2 Username</th><th>Member 2 Email</th><th>Member 3 Username</th><th>Member 3 Email</th><th>Project Title</th><th>Project Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Rows will be added here dynamically -->
+            </tbody>
+        </table>
+        <button class="submitBtn" id="registerGroupsBtnID">Register</button>  
+    </div>
+</body>
+</html>

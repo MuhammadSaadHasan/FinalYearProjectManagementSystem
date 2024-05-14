@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FYP Student Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='studentsHomePageStyle.css') }}"> <!-- Link to your CSS file -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchAllGroupsInfo();
+
+            function fetchAllGroupsInfo() {
+                $.ajax({
+                    url: '{{ url_for("student_bp.get_all_groups_info") }}',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        const tbody = document.querySelector('#AllGroupsInfoTable tbody');
+                        tbody.innerHTML = ''; // Clear existing rows
+                        data.forEach(group => {
+                            const row = `<tr>
+                                <td>${group.member1}</td>
+                                <td>${group.email1}</td>
+                                <td>${group.member2}</td>
+                                <td>${group.email2}</td>
+                                <td>${group.member3}</td>
+                                <td>${group.email3}</td>
+                                <td>${group.project_title}</td>
+                                <td>${group.project_description}</td>
+                                <td>${group.supervisor}</td>
+                            </tr>`;
+                            tbody.innerHTML += row;
+                        });
+                    },
+                    error: function(xhr) {
+                        alert('Error fetching group information: ' + xhr.statusText);
+                    }
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <header class="header" id="header">
+        <nav class="nav container">
+            <a href="#" class="nav__logo">FYP Dashboard</a>
+            <div class="nav__menu" id="nav-menu">
+                <ul class="nav__list">
+                    <li class="nav__item"><a href="{{ url_for('student_bp.student_home') }}" class="nav__link active">Home</a></li>
+                    <li class="nav__item"><a href="#Information" class="nav__link">Group and Project</a></li>
+                    <li class="nav__item"><a href="#panel-reviews" class="nav__link">Panel Reviews</a></li>
+                    <li class="nav__item"><a href="#deadlines" class="nav__link">Deadlines</a></li>
+                    <li class="nav__item"><a href="#grades" class="nav__link">Grades</a></li>
+                </ul>
+            </div>
+            <div class="nav__actions">
+                <i class="ri-search-line nav__search" id="search-btn"></i>
+                <i class="ri-user-line nav__login" id="login-btn"></i>
+                <div class="nav__toggle" id="nav-toggle">
+                    <i class="ri-menu-line"></i>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="Information" class="section">
+            <h2>Group and Project Information</h2>
+            <div class="table-container">
+                <table id="AllGroupsInfoTable">
+                    <thead>
+                        <tr>
+                            <th>Member 1 Username</th>
+                            <th>Member 1 Email</th>
+                            <th>Member 2 Username</th>
+                            <th>Member 2 Email</th>
+                            <th>Member 3 Username</th>
+                            <th>Member 3 Email</th>
+                            <th>Project Title</th>
+                            <th>Project Description</th>
+                            <th>Supervisor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be added here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Additional sections for Panel Reviews, Deadlines, and Grades can be added here -->
+    </main>
+</body>
+</html>

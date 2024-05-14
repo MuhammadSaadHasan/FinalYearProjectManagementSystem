@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to FYP Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='SignUpLoginStyle.css') }}">
+</head>
+<body>
+    <div class="signupFrm">
+        <div class="wrapper">
+            <form class="form">
+                <h1 class="title">Welcome to FYP Management System</h1>
+                <div class="inputContainer">
+                    <a href="{{ url_for('signup_bp.signup') }}" class="input btn">Sign Up</a>
+                </div>
+                <div class="inputContainer">
+                    <a href="{{ url_for('login_bp.login') }}" class="input btn">Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
