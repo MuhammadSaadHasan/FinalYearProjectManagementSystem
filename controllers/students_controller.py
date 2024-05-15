@@ -1,6 +1,8 @@
+import logging
 from flask import Blueprint, jsonify, render_template, request, session, flash, redirect, url_for
 from controllers.user_controller import UserController
-from models.models import Group, Student, User, Project, db
+from models.models import Group, Student, SupervisorRequest, User, Project, db
+
 
 class StudentController(UserController):
     def __init__(self):
@@ -8,15 +10,25 @@ class StudentController(UserController):
         self.bp = Blueprint('student_bp', __name__, template_folder='views/templates')
         self.register_routes()
 
+        # Configure logging
+        logging.basicConfig(level=logging.INFO)
+
     def register_routes(self):
         self.bp.add_url_rule('/student_home', 'student_home', self.student_home, methods=['GET'])
         self.bp.add_url_rule('/get_studentsNotInGroup', 'get_studentsNotInGroup', self.get_studentsNotInGroup, methods=['GET'])
         self.bp.add_url_rule('/get_groups', 'get_groups', self.get_groups, methods=['GET'])
         self.bp.add_url_rule('/group_project_info', 'group_project_info', self.group_project_info, methods=['GET'])
-        self.bp.add_url_rule('/get_all_groups_info', 'get_all_groups_info', self.get_all_groups_info, methods=['GET'])
+        self.bp.add_url_rule('/get_all_student_data', 'get_all_student_data', self.get_all_student_data, methods=['GET'])
+        self.bp.add_url_rule('/send_request', 'send_request', self.send_request, methods=['POST'])
+
 
     def student_home(self):
         if 'user_id' in session and 'student' in session.get('user_type', ''):
+            # Log user details
+            logging.info(f"User ID: {session.get('user_id')}")
+            logging.info(f"Username: {session.get('username')}")
+            logging.info(f"User Type: {session.get('user_type')}")
+
             return render_template('studentsHomePage.html')
         else:
             flash('You must be logged in as a Student to access this page.')
@@ -64,12 +76,22 @@ class StudentController(UserController):
             flash('You must be logged in as a Student to access this page.')
             return redirect(url_for('login_bp.login'))
 
-    def get_all_groups_info(self):
-        groups = Group.query.all()
+    from flask import session
+
+    def get_all_student_data(self):
+        user_id = session.get('user_id')  # Assuming 'user_id' is stored in the session
+        if user_id is None:
+            return jsonify({'error': 'User not logged in'}), 401
+
+        # Fetch groups associated with the current user
+        groups = Group.query.filter(Group.students.any(Student.user_id == user_id)).all()
+
         groups_data = []
         for group in groups:
             members = group.students
-            supervisor = group.project.supervisor.user.username if group.project.supervisor else 'N/A'
+            supervisor = 'N/A'
+            if group.project and group.project.supervisor:
+                supervisor = group.project.supervisor.user.username
             groups_data.append({
                 'member1': members[0].user.username if len(members) > 0 else 'N/A',
                 'email1': members[0].user.email if len(members) > 0 else 'N/A',
@@ -77,8 +99,36 @@ class StudentController(UserController):
                 'email2': members[1].user.email if len(members) > 1 else 'N/A',
                 'member3': members[2].user.username if len(members) > 2 else 'N/A',
                 'email3': members[2].user.email if len(members) > 2 else 'N/A',
-                'project_title': group.project.title,
-                'project_description': group.project.description,
+                'project_title': group.project.title if group.project else 'N/A',
+                'project_description': group.project.description if group.project else 'N/A',
                 'supervisor': supervisor
             })
+
+        # Print data on the terminal
+        for data in groups_data:
+            print("Member 1:", data['member1'])
+            print("Email 1:", data['email1'])
+            print("Member 2:", data['member2'])
+            print("Email 2:", data['email2'])
+            print("Member 3:", data['member3'])
+            print("Email 3:", data['email3'])
+            print("Project Title:", data['project_title'])
+            print("Project Description:", data['project_description'])
+            print("Supervisor:", data['supervisor'])
+            print("----------------------------------------")
+
         return jsonify(groups_data)
+    
+
+
+
+
+
+    def send_request():
+        if request.method == 'POST':
+            print(session['user_id'],  session['username'],session['user_type'] )
+
+
+
+
+

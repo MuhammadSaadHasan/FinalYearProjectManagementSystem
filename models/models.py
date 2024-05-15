@@ -68,3 +68,18 @@ class PendingGroups(db.Model):
     project_title = db.Column(db.String(255), nullable=False)
     project_description = db.Column(db.Text, nullable=False)
     approved = db.Column(db.Boolean, default=False, nullable=False)
+
+
+class SupervisorRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+    supervisor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    student = db.relationship('User', foreign_keys=[student_id])
+    group = db.relationship('Group', foreign_keys=[group_id])
+    project = db.relationship('Project', foreign_keys=[project_id])
+    supervisor = db.relationship('User', foreign_keys=[supervisor_id])
+
+    def __repr__(self):
+        return f"SupervisorRequest(student_id={self.student_id}, group_id={self.group_id}, project_id={self.project_id}, supervisor_id={self.supervisor_id})"
