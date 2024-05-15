@@ -3,93 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FYP Student Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='studentsHomePageStyle.css') }}"> <!-- Link to your CSS file -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='studentsHomePageStyle.css') }}">
+    <title>FYP Committee Home Page</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            fetchAllGroupsInfo();
+            const forms = document.querySelectorAll('.CreateUserForm, .table-container');
 
-            function fetchAllGroupsInfo() {
-                $.ajax({
-                    url: '{{ url_for("student_bp.get_all_groups_info") }}',
-                    method: 'GET',
-                    dataType: 'json',
-                    success: function(data) {
-                        const tbody = document.querySelector('#AllGroupsInfoTable tbody');
-                        tbody.innerHTML = ''; // Clear existing rows
-                        data.forEach(group => {
-                            const row = `<tr>
-                                <td>${group.member1}</td>
-                                <td>${group.email1}</td>
-                                <td>${group.member2}</td>
-                                <td>${group.email2}</td>
-                                <td>${group.member3}</td>
-                                <td>${group.email3}</td>
-                                <td>${group.project_title}</td>
-                                <td>${group.project_description}</td>
-                                <td>${group.supervisor}</td>
-                            </tr>`;
-                            tbody.innerHTML += row;
-                        });
-                    },
-                    error: function(xhr) {
-                        alert('Error fetching group information: ' + xhr.statusText);
+            document.querySelectorAll('.nav__link').forEach(link => {
+                link.addEventListener('click', event => {
+                    event.preventDefault();  // Prevent default anchor click behavior
+                    const formId = link.getAttribute('data-form');  // Get the form ID
+                    forms.forEach(form => {
+                        form.style.display = 'none';  // Hide all forms
+                    });
+
+                    const formToShow = document.getElementById(formId);
+                    if (formToShow) {
+                        formToShow.style.display = 'block';  // Show the selected form
+                        if (formId === 'ProjectGroup') {
+                            fetchAllStudentInfo();  // Fetch students if the form is for creating groups
+                        }
+                        if(formId === "chooseSupervisors")
+                        {
+                            fetchSupervisors();
+                        }
                     }
                 });
+            });
+            
+        });
+
+        document.getElementById('SendSupervisorProposalID')?.addEventListener('click', () => {
+            const selectedSupervisorRow = document.querySelector('#superviorsList tbody .selected');
+
+            if (selectedSupervisorRow) {
+                const supervisorUsername = selectedSupervisorRow.querySelector('td:first-child').innerText;
+                const supervisorEmail = selectedSupervisorRow.querySelector('td:nth-child(2)').innerText;
+
+                // You can send the supervisor's username and email to the server via AJAX
+                $.ajax({
+                    url: 'student/send_request',  // Specify the URL for sending supervisor request
+                    method: 'POST',
+                    data: {
+                        username: supervisorUsername,
+                        email: supervisorEmail
+                    },
+                    success: response => {
+                        alert(response.message);  // Display success message
+                    },
+                    error: () => {
+                        alert('Failed to send supervisor request.');  // Display error message
+                    }
+                });
+            } else {
+                alert('Please select a supervisor.');  // If no supervisor is selected, show an alert
             }
         });
+
+
+    
+
+        function fetchAllStudentInfo() {
+            $.ajax({
+                url: '{{ url_for("student_bp.get_all_student_data") }}',
+                method: 'GET',
+                success: data => {
+                    const tbody = document.querySelector('#ProjectGroupTable tbody');
+                    tbody.innerHTML = data.map(student => `<tr>
+                        <td>${student.member1}</td>
+                        <td>${student.email1}</td>
+                        <td>${student.member2}</td>
+                        <td>${student.email2}</td>
+                        <td>${student.member3}</td>
+                        <td>${student.email3}</td>
+                        <td>${student.project_title}</td>
+                        <td>${student.project_description}</td>
+                        <td>${student.supervisor}</td>
+                    </tr>`).join('');
+                },
+                error: () => alert('Failed to fetch students.')
+            });
+        }
+
+               
+        function fetchSupervisors() {
+            $.ajax({
+                url: '{{ url_for("faculty_bp.get_supervisors") }}',  // Make sure the endpoint is correct
+                method: 'GET',
+                success: data => {
+                    const tbody = document.querySelector('#superviorsList tbody');  // Make sure you have this table in HTML
+                    tbody.innerHTML = data.map(supervisor => `<tr onclick="toggleRowSelection(event)">
+                        <td>${supervisor.username}</td>
+                        <td>${supervisor.email}</td>
+                    </tr>`).join('');
+                },
+                error: () => alert('Failed to fetch supervisors.')
+            });
+        }
+
+
+        function toggleRowSelection(event) {
+            const table = event.currentTarget.closest('table');
+            let maxSelections = 100;  // Default limit for groups
+
+            if (table.id === 'superviorsList') {
+                maxSelections = 1; 
+            }
+        
+            const selectedCount = table.querySelectorAll('.selected').length;
+            const row = event.currentTarget;
+
+            if (row.classList.contains('selected')) {
+                row.classList.remove('selected');
+            } else if (selectedCount < maxSelections) {
+                row.classList.add('selected');
+            } else {
+                alert(`You can select up to ${maxSelections} row at a time.`);
+            }
+        }
+
     </script>
 </head>
 <body>
     <header class="header" id="header">
         <nav class="nav container">
-            <a href="#" class="nav__logo">FYP Dashboard</a>
+            <a href="#" class="nav__logo">MyWebsite</a>
             <div class="nav__menu" id="nav-menu">
                 <ul class="nav__list">
-                    <li class="nav__item"><a href="{{ url_for('student_bp.student_home') }}" class="nav__link active">Home</a></li>
-                    <li class="nav__item"><a href="#Information" class="nav__link">Group and Project</a></li>
-                    <li class="nav__item"><a href="#panel-reviews" class="nav__link">Panel Reviews</a></li>
-                    <li class="nav__item"><a href="#deadlines" class="nav__link">Deadlines</a></li>
-                    <li class="nav__item"><a href="#grades" class="nav__link">Grades</a></li>
+                    <li class="nav__item"><a href="{{ url_for('student_bp.student_home') }}" class="nav__link" data-form="">Home</a></li>
+                    <li class="nav__item"><a href="#project-group" class="nav__link" data-form="ProjectGroup">Project + Group</a></li>
+                    <li class="nav__item"><a href="#choose-supervisors" class="nav__link" data-form="chooseSupervisors">Choose Supervisor</a></li>
+
+
                 </ul>
             </div>
-            <div class="nav__actions">
-                <i class="ri-search-line nav__search" id="search-btn"></i>
-                <i class="ri-user-line nav__login" id="login-btn"></i>
-                <div class="nav__toggle" id="nav-toggle">
-                    <i class="ri-menu-line"></i>
-                </div>
-            </div>
+            <div class="nav__toggle" id="nav-toggle"><i class="ri-menu-line"></i></div>
         </nav>
     </header>
 
-    <main>
-        <section id="Information" class="section">
-            <h2>Group and Project Information</h2>
-            <div class="table-container">
-                <table id="AllGroupsInfoTable">
-                    <thead>
-                        <tr>
-                            <th>Member 1 Username</th>
-                            <th>Member 1 Email</th>
-                            <th>Member 2 Username</th>
-                            <th>Member 2 Email</th>
-                            <th>Member 3 Username</th>
-                            <th>Member 3 Email</th>
-                            <th>Project Title</th>
-                            <th>Project Description</th>
-                            <th>Supervisor</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Rows will be added here dynamically -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
+    
+    <div id="ProjectGroup" class="table-container" style="display: none;">
+        <table id="ProjectGroupTable">
+            <thead>
+                <tr>
+                    <th>Member 1 Username</th><th>Member 1 Email</th><th>Member 2 Username</th><th>Member 2 Email</th><th>Member 3 Username</th><th>Member 3 Email</th><th>Project Title</th><th>Project Description</th><th>Supervisor</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
-        <!-- Additional sections for Panel Reviews, Deadlines, and Grades can be added here -->
-    </main>
+
+
+
+    <div id="chooseSupervisors" class="table-container" style="display: none;">
+        <table id="superviorsList">
+            <thead>
+                <tr><th>Username</th><th>Email</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <button class="submitBtn" id="SendSupervisorProposalID">Make Supervisors</button>  
+        
+        
+    </div>
+
+    
 </body>
 </html>
